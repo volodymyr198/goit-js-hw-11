@@ -2,7 +2,7 @@ export default class ApiService {
     constructor() {
         this.searchQuery = '';
         this.page = 1;
-        this.per_page = 40;
+        this.per_page = 8;
         this.keyIp = '31814066-d36b2cc87cac42beedbbff451';
         this.baseUrl =
             'https://pixabay.com/api/?image_type=photo&orientation=horizontal&safesearch=true';
@@ -14,9 +14,10 @@ export default class ApiService {
         if (!response.ok) {
             throw new Error(response.status);
         }
+        const data = await response.json();
         this.page += 1;
 
-        return await response.json();
+        return await data.hits;
     }
 
     resetPage() {
