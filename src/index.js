@@ -31,13 +31,12 @@ const onSearchBtn = async e => {
                 hiddenLoadMoreBtn();
                 return notification.withoutRquest();
             }
-            ifNoHitsFound(hits);
 
-            // if (hits.length === 0) {
-            //     refs.gallery.innerHTML = '';
-            //     hiddenLoadMoreBtn();
-            //     return notification.emptyArrayReturn();
-            // }
+            if (hits.length === 0) {
+                refs.gallery.innerHTML = '';
+                hiddenLoadMoreBtn();
+                return notification.emptyArrayReturn();
+            }
 
             refs.gallery.innerHTML = '';
 
@@ -77,34 +76,6 @@ const onLoadMore = async e => {
     }
 };
 refs.loadMoreBtn.addEventListener('click', onLoadMore);
-
-///////////////////////////////////////////////////////////////////////
-function ifNoHitsFound(hits) {
-    if (hits.length === 0) {
-        refs.gallery.innerHTML = '';
-        hiddenLoadMoreBtn();
-        return notification.emptyArrayReturn();
-    }
-}
-
-// function ifQueryEmpty() {
-//     if (apiService.query === '') {
-//         refs.gallery.innerHTML = '';
-//         hiddenLoadMoreBtn();
-//         return withoutRquest();
-//     }
-// }
-
-// function ifRunOutHits(totalHits) {
-//     if (totalHits - refs.gallery.children.length < 40) {
-//         endOfCollection();
-//         hiddenLoadMoreBtn();
-//     }
-// }
-
-// function renderingRequest() {
-//     refs.gallery.insertAdjacentHTML('beforeend', markup(hits));
-// }
 
 function uncoverLoadMoreBtn() {
     refs.loadMoreBtn.classList.remove('is-hidden');
