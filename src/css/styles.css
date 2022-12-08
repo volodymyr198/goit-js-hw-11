@@ -86,7 +86,7 @@ img:hover {
     border-bottom-right-radius: 5px;
 }
 
-.load-more {
+.btn {
     display: block;
     color: white;
     background-color: deepskyblue;
@@ -99,8 +99,12 @@ img:hover {
     transition: 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.load-more:hover {
+.btn:hover {
     color: deepskyblue;
     background-color: white;
     border: thick double #32a1ce;
+}
+
+.is-hidden {
+    display: none;
 }

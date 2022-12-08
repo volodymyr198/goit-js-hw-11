@@ -3,10 +3,12 @@ import ApiService from './js/api-service';
 import { markup } from './js/markup';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+import { smoothScroll } from './js/smooth-scroll';
+import * as notification from './js/notifications';
 
 const refs = {
     formEl: document.querySelector('.search-form'),
-    loadMoreBtn: document.querySelector('.load-more'),
+    loadMoreBtn: document.querySelector('.btn'),
     gallery: document.querySelector('.gallery'),
 };
 const lightbox = new SimpleLightbox('.gallery a', {
@@ -19,41 +21,95 @@ const apiService = new ApiService();
 
 const onSearchBtn = async e => {
     e.preventDefault();
+    try {
+        apiService.query = e.currentTarget.elements.searchQuery.value.trim();
 
-    apiService.query = e.currentTarget.elements.searchQuery.value.trim();
+        apiService.resetPage();
+        await apiService.fetchImages().then(({ hits, totalHits }) => {
+            if (apiService.query === '') {
+                refs.gallery.innerHTML = '';
+                hiddenLoadMoreBtn();
+                return notification.withoutRquest();
+            }
+            ifNoHitsFound(hits);
 
-    if (apiService.query === '') {
-        return alert('please, enter a request!');
+            // if (hits.length === 0) {
+            //     refs.gallery.innerHTML = '';
+            //     hiddenLoadMoreBtn();
+            //     return notification.emptyArrayReturn();
+            // }
+
+            refs.gallery.innerHTML = '';
+
+            notification.startLoading();
+            refs.gallery.insertAdjacentHTML('beforeend', markup(hits));
+            notification.stopLoading();
+            notification.messageTotalHits(totalHits);
+            uncoverLoadMoreBtn();
+
+            if (totalHits - refs.gallery.children.length < 40) {
+                notification.endOfCollection();
+                hiddenLoadMoreBtn();
+            }
+        });
+        lightbox.refresh();
+    } catch (error) {
+        notification.errorMessage(error);
     }
-
-    apiService.resetPage();
-    await apiService.fetchImages().then(hits => {
-        console.log(hits);
-        console.log(hits.length);
-
-        if (hits === [] || hits.length === 0) {
-            return alert(
-                'Sorry, there are no images matching your search query. Please try again.'
-            );
-        }
-
-        refs.gallery.innerHTML = '';
-        refs.gallery.innerHTML = markup(hits);
-    });
-    lightbox.refresh();
 };
 refs.formEl.addEventListener('submit', onSearchBtn);
 
 const onLoadMore = async e => {
-    await apiService.fetchImages().then(hits => {
-        if (hits === [] || hits.length === 0) {
-            return alert(
-                'Sorry, there are no images matching your search query. Please try again.'
-            );
-        }
-        refs.gallery.insertAdjacentHTML = ('beforeend', markup(hits));
-    });
-    lightbox.refresh();
+    try {
+        await apiService.fetchImages().then(({ hits, totalHits }) => {
+            if (totalHits - refs.gallery.children.length < 40) {
+                notification.endOfCollection();
+                hiddenLoadMoreBtn();
+            }
+            notification.startLoading();
+            refs.gallery.insertAdjacentHTML('beforeend', markup(hits));
+            notification.stopLoading();
+            smoothScroll(refs.gallery);
+        });
+        lightbox.refresh();
+    } catch (error) {
+        notification.errorMessage(error);
+    }
 };
-
 refs.loadMoreBtn.addEventListener('click', onLoadMore);
+
+///////////////////////////////////////////////////////////////////////
+function ifNoHitsFound(hits) {
+    if (hits.length === 0) {
+        refs.gallery.innerHTML = '';
+        hiddenLoadMoreBtn();
+        return notification.emptyArrayReturn();
+    }
+}
+
+// function ifQueryEmpty() {
+//     if (apiService.query === '') {
+//         refs.gallery.innerHTML = '';
+//         hiddenLoadMoreBtn();
+//         return withoutRquest();
+//     }
+// }
+
+// function ifRunOutHits(totalHits) {
+//     if (totalHits - refs.gallery.children.length < 40) {
+//         endOfCollection();
+//         hiddenLoadMoreBtn();
+//     }
+// }
+
+// function renderingRequest() {
+//     refs.gallery.insertAdjacentHTML('beforeend', markup(hits));
+// }
+
+function uncoverLoadMoreBtn() {
+    refs.loadMoreBtn.classList.remove('is-hidden');
+}
+
+function hiddenLoadMoreBtn() {
+    refs.loadMoreBtn.classList.add('is-hidden');
+}
