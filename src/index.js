@@ -18,9 +18,10 @@ const lightbox = new SimpleLightbox('.gallery a', {
     captionDelay: 250,
 });
 const apiService = new ApiService();
-
+const { page } = apiService;
 const onSearchBtn = async e => {
     e.preventDefault();
+    hiddenLoadMoreBtn();
     try {
         apiService.query = e.currentTarget.elements.searchQuery.value.trim();
 
@@ -46,9 +47,10 @@ const onSearchBtn = async e => {
             notification.messageTotalHits(totalHits);
             uncoverLoadMoreBtn();
 
-            if (totalHits - refs.gallery.children.length < 40) {
-                notification.endOfCollection();
+            if (totalHits / 40 <= page) {
+                console.log(Math.floor(totalHits / 40));
                 hiddenLoadMoreBtn();
+                notification.endOfCollection();
             }
         });
         lightbox.refresh();
